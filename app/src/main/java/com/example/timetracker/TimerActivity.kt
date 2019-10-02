@@ -1,62 +1,46 @@
 package com.example.timetracker
 
 import android.os.Bundle
-import com.google.android.material.snackbar.Snackbar
 import androidx.appcompat.app.AppCompatActivity
-import android.view.Menu
+import android.view.*
 import android.view.MenuItem
-import android.content.Context
+import android.os.SystemClock
+
 
 import kotlinx.android.synthetic.main.activity_main.*
 
 class TimerActivity : AppCompatActivity() {
 
-    enum class TimerState{
-        Stopped, Paused, Running
-    }
-
-    private lateinit var timer: Stopwatch;
-    private var timerLengthSeconds = 0L;
-    private var timerState = TimerState.Stopped;
-    private var secondsRemaining = 0L;
+    private var running:Boolean = false;
+    private var pauseOffSet:Long = 0L;
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
 
-        supportActionBar?.setIcon(R.drawable.ic_timer)
-        supportActionBar?.title= "     Timer"
-        fab_start.setOnClickListener { v ->
-            startTimer();
-            timerState = TimerState.Running;
-            updateButtons();
-        }
-        fab_pause.setOnClickListener { v ->
-            timer.cancel();
-            timerState = TimerState.Paused;
-            updateButtons();
-        }
-        fab_stop.setOnClickListener { v ->
-            timer.cancel();
-            onTimerFinished();
-        }
-    }
 
-    override fun onResume(){
-        super.onResume();
-        initTimer();
-
-        //TODO: Remove background timer, hide notifications
-    }
-
-    override fun onPause(){
-        if(timerState==TImerState.Running){
-            timer.cancel()
-            //TODO: start background timer and show notification
+        chronometer_start.setOnClickListener{
+            if(!running) {
+                chronometer.base = SystemClock.elapsedRealtime() - pauseOffSet;
+                chronometer.start()
+                running=true;
+            }
         }
-        else if(timerState==TImerState.Paused){
-            //TODO: show notification
+
+        chronometer_pause.setOnClickListener{
+            if(running) {
+                chronometer.stop();
+                pauseOffSet = SystemClock.elapsedRealtime() - chronometer.base;
+                running=false;
+            }
+        }
+
+        chronometer_stop.setOnClickListener{
+            chronometer.stop();
+            chronometer.base = SystemClock.elapsedRealtime();
+            pauseOffSet = 0;
+            running=false;
         }
     }
 

@@ -22,8 +22,17 @@
 
     <include layout="@layout/content_main" />
 
+    <Chronometer
+        android:id="@+id/chronometer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:format="%s"
+        android:textSize="50sp"
+        />
+
     <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fab_stop"
+        android:id="@+id/chronometer_stop"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
@@ -31,7 +40,7 @@
         app:srcCompat="@drawable/ic_stop" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fab_pause"
+        android:id="@+id/chronometer_pause"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|center"
@@ -39,7 +48,7 @@
         app:srcCompat="@drawable/ic_pause" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fab_start"
+        android:id="@+id/chronometer_start"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|left"
