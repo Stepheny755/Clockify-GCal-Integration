@@ -1,18 +1,28 @@
 package com.example.timetracker
 
+import android.content.Context
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import android.view.*
 import android.view.MenuItem
 import android.os.SystemClock
-
+import androidx.appcompat.app.AlertDialog
+import java.util.Calendar
+import android.widget.Toast
 
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.alertdialog.view.*
 
 class TimerActivity : AppCompatActivity() {
 
     private var running:Boolean = false;
     private var pauseOffSet:Long = 0L;
+    private var lastStart:Calendar?= null;
+    private var lastEnd:Calendar?= null;
+    private var lastEvent:String?= null;
+    private var newEvent:Event?=null;
+
+    //private val
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -24,7 +34,9 @@ class TimerActivity : AppCompatActivity() {
             if(!running) {
                 chronometer.base = SystemClock.elapsedRealtime() - pauseOffSet;
                 chronometer.start()
-                running=true;
+                running = true;
+                lastStart = Calendar.getInstance();
+                textView.text=lastStart.toString();
             }
         }
 
@@ -40,6 +52,12 @@ class TimerActivity : AppCompatActivity() {
             chronometer.stop();
             chronometer.base = SystemClock.elapsedRealtime();
             pauseOffSet = 0;
+            if(running){
+                lastEnd = Calendar.getInstance();
+                //textView.text=lastEnd.toString();
+                lastEvent = showEditTextDialog(this);
+                newEvent = Event(lastStart!!,lastEnd!!,this);
+            }
             running=false;
         }
     }
@@ -59,4 +77,19 @@ class TimerActivity : AppCompatActivity() {
             else -> super.onOptionsItemSelected(item)
         }
     }
+
+    private fun showEditTextDialog(context:Context): String{
+        val builder = AlertDialog.Builder(context);
+        val inflater = layoutInflater
+        builder.setTitle("Set Event Name");
+        //builder.setMessage("Please enter the name of this event")
+        val dialogLayout = inflater.inflate(R.layout.alertdialog,null);
+        val editText = dialogLayout.editText
+        builder.setView(dialogLayout);
+        builder.setPositiveButton("Done") { _, _ -> Toast.makeText(applicationContext, "Event Name" + editText.text.toString(), Toast.LENGTH_SHORT).show(); newEvent?.getEventName(editText.text.toString()) ;newEvent?.createCalendarEvent(this) };
+        builder.setNegativeButton("Cancel"){ _, _ -> return@setNegativeButton };
+        builder.show();
+        return editText.text.toString();
+    }
+
 }
