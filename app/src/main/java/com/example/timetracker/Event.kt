@@ -5,7 +5,7 @@ import android.content.Intent
 import android.provider.CalendarContract
 import java.util.*
 
-class Event(startTime:Calendar,endTime:Calendar,duration:Long,context:Context){
+class Event(startTime:Calendar,endTime:Calendar,duration:Long){
 
     private var startTime:Calendar?=null;
     private var endTime:Calendar?=null;
@@ -24,7 +24,11 @@ class Event(startTime:Calendar,endTime:Calendar,duration:Long,context:Context){
         //createCalendarEvent(context);
     }
 
-    fun getEventName(name:String){
+    fun getEventActiveDuration():Long?{ return this.activeDuration; }
+    fun getEventPassiveDuration():Long?{ return this.passiveDuration; }
+    fun getEventTotalDuration():Long?{ return this.totalDuration; }
+
+    fun setEventName(name:String){
         this.eventName = name;
     }
 
@@ -40,8 +44,8 @@ class Event(startTime:Calendar,endTime:Calendar,duration:Long,context:Context){
         return calculateDurationInSec(start,end)/60;
     }
 
-    private fun millisToTime(millis:Long){
-
+    private fun millisToTime(millis:Long):String{
+        return millis.toString();//String.format("%02d:%02d:%02d",millis/(1000*60*60),millis/(1000*60)%60,millis/(1000)%60)
     }
 
     fun createCalendarEvent(context:Context){
@@ -50,6 +54,7 @@ class Event(startTime:Calendar,endTime:Calendar,duration:Long,context:Context){
             .putExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME,startTime?.timeInMillis)
             .putExtra(CalendarContract.EXTRA_EVENT_END_TIME,endTime?.timeInMillis)
             .putExtra(CalendarContract.Events.TITLE,eventName)
+            .putExtra(CalendarContract.Events.DESCRIPTION,millisToTime(passiveDuration!!))
         context.startActivity(intent)
     }
 }

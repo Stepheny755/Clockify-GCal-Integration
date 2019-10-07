@@ -15,7 +15,11 @@ import kotlinx.android.synthetic.main.alertdialog.view.*
 
 class TimerActivity : AppCompatActivity() {
 
-    private var running:Boolean = false;
+    private enum class State{
+        Stopped,Paused,Running
+    }
+
+    private var state=State.Stopped;
     private var pauseOffSet:Long = 0L;
     private var lastStart:Calendar?= null;
     private var lastEnd:Calendar?= null;
@@ -30,36 +34,43 @@ class TimerActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
 
-
         chronometer_start.setOnClickListener{
-            if(!running) {
+            if(state==State.Stopped){
                 chronometer.base = SystemClock.elapsedRealtime() - pauseOffSet;
                 chronometer.start()
-                running = true;
                 lastStart = Calendar.getInstance();
-                textView.text=lastStart.toString();
+                state = State.Running;
+                //textView.text=lastStart.toString();
+            }
+            if(state==State.Paused){
+                chronometer.base = SystemClock.elapsedRealtime() - pauseOffSet;
+                chronometer.start()
+                state = State.Running;
+
             }
         }
 
         chronometer_pause.setOnClickListener{
-            if(running) {
+            if(state==State.Running) {
                 chronometer.stop();
                 pauseOffSet = SystemClock.elapsedRealtime() - chronometer.base;
-                running=false;
+                state=State.Paused;
             }
         }
 
         chronometer_stop.setOnClickListener{
             chronometer.stop();
-            chronometer.base = SystemClock.elapsedRealtime();
             pauseOffSet = 0;
-            if(running){
+            if(state==State.Running||state==State.Paused){
                 lastEnd = Calendar.getInstance();
-                //textView.text=lastEnd.toString();
                 lastEvent = showEditTextDialog(this);
-                newEvent = Event(lastStart!!,lastEnd!!,chronometer.base,this);
+                val dur:Long = SystemClock.elapsedRealtime()-chronometer.base
+                newEvent = Event(lastStart!!,lastEnd!!,dur);
+                textView.text=newEvent?.getEventTotalDuration().toString();
+                textView2.text=newEvent?.getEventPassiveDuration().toString();
             }
-            running=false;
+            chronometer.base = SystemClock.elapsedRealtime();
+            state=State.Stopped;
         }
     }
 
@@ -82,19 +93,25 @@ class TimerActivity : AppCompatActivity() {
     override fun onSaveInstanceState(outState: Bundle){
         super.onSaveInstanceState(outState)
         outState.putLong("chronometer_base",chronometer.base);
-        outState.putBoolean("state",running);
+        outState.putLong("pauseOffset",pauseOffSet);
+        outState.putSerializable("state",state);
         outState.putSerializable("startTime",lastStart);
         outState.putSerializable("endTime",lastEnd);
-
     }
 
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
         super.onRestoreInstanceState(savedInstanceState)
-        running = savedInstanceState.getBoolean("state");
-        lastStart = savedInstanceState.getSerializable("endTime") as? Calendar
+        lastStart = savedInstanceState.getSerializable("startTime") as? Calendar
         lastEnd = savedInstanceState.getSerializable("endTime") as? Calendar
-        chronometer.base=savedInstanceState.getLong("chronometer_base");
-        chronometer.start();
+        state = savedInstanceState.getSerializable("state") as State;
+        pauseOffSet = savedInstanceState.getLong("pauseOffset")
+        chronometer.base = SystemClock.elapsedRealtime();
+        if(state==State.Running){
+            chronometer.base=savedInstanceState.getLong("chronometer_base")
+            chronometer.start();
+        }else if(state==State.Paused){
+            chronometer.base= SystemClock.elapsedRealtime()-pauseOffSet;
+        }
     }
 
     private fun showEditTextDialog(context:Context): String{
@@ -105,7 +122,7 @@ class TimerActivity : AppCompatActivity() {
         val dialogLayout = inflater.inflate(R.layout.alertdialog,null);
         val editText = dialogLayout.editText
         builder.setView(dialogLayout);
-        builder.setPositiveButton("Done") { _, _ -> Toast.makeText(applicationContext, "Event Name" + editText.text.toString(), Toast.LENGTH_SHORT).show(); newEvent?.getEventName(editText.text.toString()) ;newEvent?.createCalendarEvent(this) };
+        //builder.setPositiveButton("Done") { _, _ -> Toast.makeText(applicationContext, "Event Name" + editText.text.toString(), Toast.LENGTH_SHORT).show(); newEvent?.getEventName(editText.text.toString()) ;newEvent?.createCalendarEvent(this) };
         builder.setNegativeButton("Cancel"){ _, _ -> return@setNegativeButton };
         builder.show();
         return editText.text.toString();
