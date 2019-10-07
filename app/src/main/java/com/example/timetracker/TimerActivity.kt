@@ -22,6 +22,7 @@ class TimerActivity : AppCompatActivity() {
     private var lastEvent:String?= null;
     private var newEvent:Event?=null;
 
+
     //private val
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -56,7 +57,7 @@ class TimerActivity : AppCompatActivity() {
                 lastEnd = Calendar.getInstance();
                 //textView.text=lastEnd.toString();
                 lastEvent = showEditTextDialog(this);
-                newEvent = Event(lastStart!!,lastEnd!!,this);
+                newEvent = Event(lastStart!!,lastEnd!!,chronometer.base,this);
             }
             running=false;
         }
@@ -78,6 +79,24 @@ class TimerActivity : AppCompatActivity() {
         }
     }
 
+    override fun onSaveInstanceState(outState: Bundle){
+        super.onSaveInstanceState(outState)
+        outState.putLong("chronometer_base",chronometer.base);
+        outState.putBoolean("state",running);
+        outState.putSerializable("startTime",lastStart);
+        outState.putSerializable("endTime",lastEnd);
+
+    }
+
+    override fun onRestoreInstanceState(savedInstanceState: Bundle) {
+        super.onRestoreInstanceState(savedInstanceState)
+        running = savedInstanceState.getBoolean("state");
+        lastStart = savedInstanceState.getSerializable("endTime") as? Calendar
+        lastEnd = savedInstanceState.getSerializable("endTime") as? Calendar
+        chronometer.base=savedInstanceState.getLong("chronometer_base");
+        chronometer.start();
+    }
+
     private fun showEditTextDialog(context:Context): String{
         val builder = AlertDialog.Builder(context);
         val inflater = layoutInflater
@@ -91,5 +110,4 @@ class TimerActivity : AppCompatActivity() {
         builder.show();
         return editText.text.toString();
     }
-
 }
