@@ -21,6 +21,7 @@ class TimerActivity : AppCompatActivity() {
 
     private var state=State.Stopped;
     private var pauseOffSet:Long = 0L;
+    private var totalTime:Long = 0;
     private var lastStart:Calendar?= null;
     private var lastEnd:Calendar?= null;
     private var lastEvent:String?= null;
@@ -36,6 +37,7 @@ class TimerActivity : AppCompatActivity() {
 
         chronometer_start.setOnClickListener{
             if(state==State.Stopped){
+                totalTime = 0;
                 chronometer.base = SystemClock.elapsedRealtime() - pauseOffSet;
                 chronometer.start()
                 lastStart = Calendar.getInstance();
@@ -46,7 +48,6 @@ class TimerActivity : AppCompatActivity() {
                 chronometer.base = SystemClock.elapsedRealtime() - pauseOffSet;
                 chronometer.start()
                 state = State.Running;
-
             }
         }
 
@@ -55,19 +56,23 @@ class TimerActivity : AppCompatActivity() {
                 chronometer.stop();
                 pauseOffSet = SystemClock.elapsedRealtime() - chronometer.base;
                 state=State.Paused;
+                totalTime+=(pauseOffSet);
             }
         }
 
         chronometer_stop.setOnClickListener{
             chronometer.stop();
+            chronometer.base = SystemClock.elapsedRealtime()-pauseOffSet
             pauseOffSet = 0;
             if(state==State.Running||state==State.Paused){
                 lastEnd = Calendar.getInstance();
                 lastEvent = showEditTextDialog(this);
-                val dur:Long = SystemClock.elapsedRealtime()-chronometer.base
+                totalTime+=(SystemClock.elapsedRealtime()-chronometer.base)
+                val dur:Long = totalTime;
                 newEvent = Event(lastStart!!,lastEnd!!,dur);
-                textView.text=newEvent?.getEventTotalDuration().toString();
-                textView2.text=newEvent?.getEventPassiveDuration().toString();
+                textView.text=newEvent?.getEventTotalDuration().toString()
+                textView2.text=totalTime.toString()
+                textView3.text=newEvent?.getEventActiveDuration().toString()
             }
             chronometer.base = SystemClock.elapsedRealtime();
             state=State.Stopped;
@@ -94,6 +99,7 @@ class TimerActivity : AppCompatActivity() {
         super.onSaveInstanceState(outState)
         outState.putLong("chronometer_base",chronometer.base);
         outState.putLong("pauseOffset",pauseOffSet);
+        outState.putLong("total_time",totalTime)
         outState.putSerializable("state",state);
         outState.putSerializable("startTime",lastStart);
         outState.putSerializable("endTime",lastEnd);
@@ -105,6 +111,7 @@ class TimerActivity : AppCompatActivity() {
         lastEnd = savedInstanceState.getSerializable("endTime") as? Calendar
         state = savedInstanceState.getSerializable("state") as State;
         pauseOffSet = savedInstanceState.getLong("pauseOffset")
+        totalTime = savedInstanceState.getLong("total_time")
         chronometer.base = SystemClock.elapsedRealtime();
         if(state==State.Running){
             chronometer.base=savedInstanceState.getLong("chronometer_base")
@@ -122,7 +129,7 @@ class TimerActivity : AppCompatActivity() {
         val dialogLayout = inflater.inflate(R.layout.alertdialog,null);
         val editText = dialogLayout.editText
         builder.setView(dialogLayout);
-        //builder.setPositiveButton("Done") { _, _ -> Toast.makeText(applicationContext, "Event Name" + editText.text.toString(), Toast.LENGTH_SHORT).show(); newEvent?.getEventName(editText.text.toString()) ;newEvent?.createCalendarEvent(this) };
+        builder.setPositiveButton("Done") { _, _ -> Toast.makeText(applicationContext, "Event Name" + editText.text.toString(), Toast.LENGTH_SHORT).show(); newEvent?.setEventName(editText.text.toString()) ;newEvent?.createCalendarEvent(this) };
         builder.setNegativeButton("Cancel"){ _, _ -> return@setNegativeButton };
         builder.show();
         return editText.text.toString();

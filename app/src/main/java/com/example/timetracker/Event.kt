@@ -18,30 +18,26 @@ class Event(startTime:Calendar,endTime:Calendar,duration:Long){
     init{
         this.startTime=startTime;
         this.endTime = endTime;
-        this.totalDuration=calculateDurationInSec(startTime,endTime);
-        this.activeDuration=calculateDurationInSec(0,duration);
-        this.passiveDuration=calculateDurationInSec(this.activeDuration!!,this.totalDuration!!);
+        this.totalDuration=calculateDuration(startTime,endTime);
+        this.activeDuration=calculateDuration(0,duration);
+        this.passiveDuration=calculateDuration(this.activeDuration!!,this.totalDuration!!);
         //createCalendarEvent(context);
     }
 
-    fun getEventActiveDuration():Long?{ return this.activeDuration; }
-    fun getEventPassiveDuration():Long?{ return this.passiveDuration; }
-    fun getEventTotalDuration():Long?{ return this.totalDuration; }
+    fun getEventActiveDuration():Long?{ return (this.activeDuration!!)/1000; }
+    fun getEventPassiveDuration():Long?{ return (this.passiveDuration!!)/1000; }
+    fun getEventTotalDuration():Long?{ return (this.totalDuration!!)/1000; }
 
     fun setEventName(name:String){
         this.eventName = name;
     }
 
-    private fun calculateDurationInSec(start:Calendar,end:Calendar):Long{
-        return (end.timeInMillis-start.timeInMillis)/1000;
+    private fun calculateDuration(start:Calendar,end:Calendar):Long{
+        return (end.timeInMillis-start.timeInMillis);
     }
 
-    private fun calculateDurationInSec(start:Long=0,end:Long):Long{
-        return (end-start)/1000;
-    }
-
-    private fun calculateDurationInMin(start:Calendar,end:Calendar):Long{
-        return calculateDurationInSec(start,end)/60;
+    private fun calculateDuration(start:Long=0,end:Long):Long{
+        return (end-start);
     }
 
     private fun millisToTime(millis:Long):String{
