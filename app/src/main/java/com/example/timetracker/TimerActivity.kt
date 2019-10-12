@@ -19,13 +19,12 @@ class TimerActivity : AppCompatActivity() {
         Stopped,Paused,Running
     }
 
-    private var state=State.Stopped;
-    private var pauseOffSet:Long = 0L;
-    private var totalTime:Long = 0;
-    private var lastStart:Calendar?= null;
-    private var lastEnd:Calendar?= null;
-    private var lastEvent:String?= null;
-    private var newEvent:Event?=null;
+    private var state=State.Stopped
+    private var pauseOffSet:Long = 0L
+    private var lastStart:Calendar?= null
+    private var lastEnd:Calendar?= null
+    private var lastEvent:String?= null
+    private var newEvent:Event?=null
 
 
     //private val
@@ -37,50 +36,48 @@ class TimerActivity : AppCompatActivity() {
 
         chronometer_start.setOnClickListener{
             if(state==State.Stopped){
-                totalTime = 0;
-                chronometer.base = SystemClock.elapsedRealtime() - pauseOffSet;
+                chronometer.base = SystemClock.elapsedRealtime() - pauseOffSet
                 chronometer.start()
-                lastStart = Calendar.getInstance();
-                state = State.Running;
-                //textView.text=lastStart.toString();
+                lastStart = Calendar.getInstance()
+                state = State.Running
+                //textView.text=lastStart.toString()
             }
             if(state==State.Paused){
-                chronometer.base = SystemClock.elapsedRealtime() - pauseOffSet;
+                chronometer.base = SystemClock.elapsedRealtime() - pauseOffSet
                 chronometer.start()
-                state = State.Running;
+                state = State.Running
             }
         }
 
         chronometer_pause.setOnClickListener{
             if(state==State.Running) {
-                chronometer.stop();
-                pauseOffSet = SystemClock.elapsedRealtime() - chronometer.base;
-                state=State.Paused;
-                totalTime+=(pauseOffSet);
+                chronometer.stop()
+                pauseOffSet = SystemClock.elapsedRealtime() - chronometer.base
+                state=State.Paused
             }
         }
 
         chronometer_stop.setOnClickListener{
-            chronometer.stop();
-            chronometer.base = SystemClock.elapsedRealtime()-pauseOffSet
-            pauseOffSet = 0;
+            //chronometer.base = SystemClock.elapsedRealtime()-pauseOffSet
+            chronometer.stop()
+            pauseOffSet = 0
             if(state==State.Running||state==State.Paused){
-                lastEnd = Calendar.getInstance();
-                lastEvent = showEditTextDialog(this);
-                totalTime+=(SystemClock.elapsedRealtime()-chronometer.base)
-                val dur:Long = totalTime;
-                newEvent = Event(lastStart!!,lastEnd!!,dur);
+                lastEnd = Calendar.getInstance()
+                lastEvent = showEditTextDialog(this)
+                val dur:Long = SystemClock.elapsedRealtime()-chronometer.base
+                newEvent = Event(lastStart!!,lastEnd!!,dur)
                 textView.text=newEvent?.getEventTotalDuration().toString()
-                textView2.text=totalTime.toString()
+                textView2.text=newEvent?.getEventPassiveDuration().toString()
                 textView3.text=newEvent?.getEventActiveDuration().toString()
+                textView4.text=newEvent?.getEventActiveDurationTime()
             }
-            chronometer.base = SystemClock.elapsedRealtime();
-            state=State.Stopped;
+            chronometer.base = SystemClock.elapsedRealtime()
+            state=State.Stopped
         }
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        // Inflate the menu; this adds items to the action bar if it is present.
+        // Inflate the menu this adds items to the action bar if it is present.
         menuInflater.inflate(R.menu.menu_main, menu)
         return true
     }
@@ -97,41 +94,39 @@ class TimerActivity : AppCompatActivity() {
 
     override fun onSaveInstanceState(outState: Bundle){
         super.onSaveInstanceState(outState)
-        outState.putLong("chronometer_base",chronometer.base);
-        outState.putLong("pauseOffset",pauseOffSet);
-        outState.putLong("total_time",totalTime)
-        outState.putSerializable("state",state);
-        outState.putSerializable("startTime",lastStart);
-        outState.putSerializable("endTime",lastEnd);
+        outState.putLong("chronometer_base",chronometer.base)
+        outState.putLong("pauseOffset",pauseOffSet)
+        outState.putSerializable("state",state)
+        outState.putSerializable("startTime",lastStart)
+        outState.putSerializable("endTime",lastEnd)
     }
 
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
         super.onRestoreInstanceState(savedInstanceState)
         lastStart = savedInstanceState.getSerializable("startTime") as? Calendar
         lastEnd = savedInstanceState.getSerializable("endTime") as? Calendar
-        state = savedInstanceState.getSerializable("state") as State;
+        state = savedInstanceState.getSerializable("state") as State
         pauseOffSet = savedInstanceState.getLong("pauseOffset")
-        totalTime = savedInstanceState.getLong("total_time")
-        chronometer.base = SystemClock.elapsedRealtime();
+        chronometer.base = SystemClock.elapsedRealtime()
         if(state==State.Running){
             chronometer.base=savedInstanceState.getLong("chronometer_base")
-            chronometer.start();
+            chronometer.start()
         }else if(state==State.Paused){
-            chronometer.base= SystemClock.elapsedRealtime()-pauseOffSet;
+            chronometer.base= SystemClock.elapsedRealtime()-pauseOffSet
         }
     }
 
     private fun showEditTextDialog(context:Context): String{
-        val builder = AlertDialog.Builder(context);
+        val builder = AlertDialog.Builder(context)
         val inflater = layoutInflater
-        builder.setTitle("Set Event Name");
+        builder.setTitle("Set Event Name")
         //builder.setMessage("Please enter the name of this event")
-        val dialogLayout = inflater.inflate(R.layout.alertdialog,null);
+        val dialogLayout = inflater.inflate(R.layout.alertdialog,null)
         val editText = dialogLayout.editText
-        builder.setView(dialogLayout);
-        builder.setPositiveButton("Done") { _, _ -> Toast.makeText(applicationContext, "Event Name" + editText.text.toString(), Toast.LENGTH_SHORT).show(); newEvent?.setEventName(editText.text.toString()) ;newEvent?.createCalendarEvent(this) };
-        builder.setNegativeButton("Cancel"){ _, _ -> return@setNegativeButton };
-        builder.show();
-        return editText.text.toString();
+        builder.setView(dialogLayout)
+        builder.setPositiveButton("Done") { _, _ -> Toast.makeText(applicationContext, "Event Name" + editText.text.toString(), Toast.LENGTH_SHORT).show(); newEvent?.setEventName(editText.text.toString()); newEvent?.createCalendarEvent(this) }
+        builder.setNegativeButton("Cancel"){ _, _ -> return@setNegativeButton }
+        builder.show()
+        return editText.text.toString()
     }
 }
