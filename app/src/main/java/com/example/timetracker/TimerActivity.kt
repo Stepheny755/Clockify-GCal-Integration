@@ -69,7 +69,6 @@ class TimerActivity : AppCompatActivity() {
                 textView.text=newEvent?.getEventTotalDuration().toString()
                 textView2.text=newEvent?.getEventPassiveDuration().toString()
                 textView3.text=newEvent?.getEventActiveDuration().toString()
-                textView4.text=newEvent?.getEventActiveDurationTime()
             }
             chronometer.base = SystemClock.elapsedRealtime()
             state=State.Stopped
